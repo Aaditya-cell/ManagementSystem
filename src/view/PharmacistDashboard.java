@@ -1,6 +1,7 @@
 package view;
 
 import controller.PharmacyController;
+import java.util.ArrayList; // FIXED: Added missing import
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JOptionPane;
 import model.Medicine;
@@ -12,19 +13,68 @@ public class PharmacistDashboard extends javax.swing.JFrame {
         refreshMedicineTable();
     }
 
-    private void refreshMedicineTable() {
-        searchMedicineTable(""); 
-    }
+public void refreshMedicineTable() {
+    DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+    model.setRowCount(0); // Clear the table first
 
+    // Get the latest list from controller
+    ArrayList<Medicine> list = new PharmacyController().searchMedicine(""); 
+
+    for (Medicine m : list) {
+        model.addRow(new Object[]{
+            m.getId(),       // Column 0
+            m.getName(),     // Column 1
+            m.getQuantity(), // FIXED: Use getQuantity() instead of getCategory()
+            m.getPrice()     // Column 3
+        });
+    }
+}
+
+    // UPDATED: Added Category to the table display
+    private void updateTableWithResults(ArrayList<Medicine> medicines) {
+    DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+    model.setRowCount(0);
+    for (Medicine m : medicines) {
+        // Correct Order: ID, Name, Quantity, Price
+        // Index 2 should be Quantity, NOT Category
+        model.addRow(new Object[]{
+            m.getId(), 
+            m.getName(), 
+            m.getQuantity(), // Corrected: This was m.getCategory()
+            m.getPrice()
+        });
+    }
+}
     private void searchMedicineTable(String query) {
         PharmacyController control = new PharmacyController();
-        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-        model.setRowCount(0); 
+        ArrayList<Medicine> results = control.searchMedicine(query);
+        updateTableWithResults(results);
+    }
+    private void searchMedicineByID() {
+    String searchID = JOptionPane.showInputDialog(this, "Enter Medicine ID to Search:");
+    
+    if (searchID == null || searchID.trim().isEmpty()) {
+        return; 
+    }
 
-        for (Medicine m : control.searchMedicine(query)) {
-            model.addRow(new Object[]{m.getId(), m.getName(), m.getQuantity(), m.getPrice()});
+    PharmacyController control = new PharmacyController();
+    ArrayList<Medicine> allMedicines = control.searchMedicine(""); // Get all
+    ArrayList<Medicine> result = new ArrayList<>();
+
+    // Linear Search for the ID
+    for (Medicine m : allMedicines) {
+        if (m.getId().equalsIgnoreCase(searchID.trim())) {
+            result.add(m);
+            break; // Stop once found
         }
     }
+
+    if (!result.isEmpty()) {
+        updateTableWithResults(result);
+    } else {
+        JOptionPane.showMessageDialog(this, "No medicine found with ID: " + searchID);
+    }
+}
 
     private void clearMedicineFields() {
         jTextField2.setText(""); // ID
@@ -33,11 +83,20 @@ public class PharmacistDashboard extends javax.swing.JFrame {
         jTextField3.setText(""); // Price
         txtSearch.setText("");
     }
+   
+public void updateTableData(java.util.ArrayList<model.Medicine> list) {
+    DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+    model.setRowCount(0); 
 
-    private void txtSearchKeyReleased(java.awt.event.KeyEvent evt) {                                      
-        searchMedicineTable(txtSearch.getText());
-    }
+    for (model.Medicine m : list) {
+        model.addRow(new Object[]{
+            m.getId(),
+            m.getName(),
+            m.getQuantity(), // Use Quantity at index 2
+            m.getPrice()     // Use Price at index 3
+        });
     
+}}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -69,6 +128,11 @@ public class PharmacistDashboard extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         txtSearch = new javax.swing.JTextField();
+        jButton6 = new javax.swing.JButton();
+        jComboBox1 = new javax.swing.JComboBox<>();
+        jLabel2 = new javax.swing.JLabel();
+        txtSearch1 = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -179,6 +243,30 @@ public class PharmacistDashboard extends javax.swing.JFrame {
             }
         });
 
+        jButton6.setText("short");
+        jButton6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton6ActionPerformed(evt);
+            }
+        });
+
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "short aesc by name", "short desc by name", "short aesc by price", "short desc by price", " " }));
+        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBox1ActionPerformed(evt);
+            }
+        });
+
+        jLabel2.setText("Name");
+
+        txtSearch1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtSearch1ActionPerformed(evt);
+            }
+        });
+
+        jLabel3.setText("ID");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -186,33 +274,56 @@ public class PharmacistDashboard extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(24, 24, 24)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 430, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 38, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(56, 56, 56)
+                        .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(77, 77, 77))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(26, 26, 26)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(32, 32, 32))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(198, 198, 198))))
+                        .addContainerGap(44, Short.MAX_VALUE))))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(271, 271, 271)
+                .addComponent(jLabel1)
+                .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel1)
-                .addGap(265, 265, 265))
+                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(txtSearch1, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(91, 91, 91)
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(64, 64, 64))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(29, 29, 29)
+                .addContainerGap()
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addGap(21, 21, 21)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel2))
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(txtSearch1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel3)))
+                .addGap(31, 31, 31)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 427, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 371, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(23, 23, 23)))
-                .addContainerGap(15, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButton6))))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -235,66 +346,97 @@ public class PharmacistDashboard extends javax.swing.JFrame {
     
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        clearMedicineFields();
+  jTextField2.setText(""); 
+    jTextField4.setText(""); 
+    jTextField5.setText(""); 
+    jTextField3.setText(""); 
+    txtSearch.setText(""); // FIXED: Changed from jTextFieldSearch to txtSearch
+
+    PharmacyController control = new PharmacyController();
+    ArrayList<Medicine> allMedicines = control.searchMedicine(""); 
+    updateTableWithResults(allMedicines);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
-      try {
-            // Using the actual NetBeans variable names from your declaration
-            String id = jTextField2.getText(); // ID field
-            String name = jTextField4.getText(); // Name field
-            String qtyStr = jTextField5.getText(); // Quantity field
-            String priceStr = jTextField3.getText(); // Price field
+     try {
+        String id = jTextField2.getText().trim();
+        String name = jTextField4.getText().trim();
+        String category = "General"; 
+        String qtyStr = jTextField5.getText().trim();
+        String priceStr = jTextField3.getText().trim();
 
-            if(id.isEmpty() || name.isEmpty() || qtyStr.isEmpty() || priceStr.isEmpty()) {
-                javax.swing.JOptionPane.showMessageDialog(this, "All fields are required!");
+        if(id.isEmpty() || name.isEmpty() || qtyStr.isEmpty() || priceStr.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "All fields are required!");
+        } else {
+            int qty = Integer.parseInt(qtyStr);
+            double price = Double.parseDouble(priceStr);
+            
+            // Call controller and capture the result
+            PharmacyController control = new PharmacyController();
+            String result = control.addMedicine(id, name, category, qty, price);
+            
+            if (result.equals("DUPLICATE")) {
+                // Requirement: Show clear error message for invalid inputs
+                JOptionPane.showMessageDialog(this, "Error: Medicine ID '" + id + "' already exists!", "Duplicate ID", JOptionPane.ERROR_MESSAGE);
             } else {
-                int qty = Integer.parseInt(qtyStr);
-                double price = Double.parseDouble(priceStr);
-                
-                new controller.PharmacyController().addMedicine(id, name, qty, price);
                 refreshMedicineTable();
                 clearMedicineFields();
-                javax.swing.JOptionPane.showMessageDialog(this, "Medicine Added Successfully!");
+                JOptionPane.showMessageDialog(this, "Medicine Added Successfully!");
             }
-        } catch (NumberFormatException e) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Quantity must be an Integer and Price must be a Double!");
         }
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(this, "Quantity must be an Integer and Price must be a Double!");
+    }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // TODO add your handling code here:
-        try {
-        String id = jTextField2.getText(); // ID
-        String newName = jTextField4.getText();
-        int newQty = Integer.parseInt(jTextField5.getText());
-        double newPrice = Double.parseDouble(jTextField3.getText());
+      try {
+            String id = jTextField2.getText().trim();
+            String newName = jTextField4.getText().trim();
+            String category = "General"; // Or get from a ComboBox if you added one
+            String qtyStr = jTextField5.getText().trim();
+            String priceStr = jTextField3.getText().trim();
 
-        if(id.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter ID to update");
-        } else {
-            new PharmacyController().updateMedicine(id, newName, newQty, newPrice);
-            refreshMedicineTable();
-            JOptionPane.showMessageDialog(this, "Medicine Updated Successfully!");
+            if (id.isEmpty() || newName.isEmpty() || qtyStr.isEmpty() || priceStr.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Please fill all fields to update.");
+            } else {
+                int newQty = Integer.parseInt(qtyStr);
+                double newPrice = Double.parseDouble(priceStr);
+
+                // FIXED: Passing 5 arguments now
+                boolean success = new PharmacyController().updateMedicine(id, newName, category, newQty, newPrice);
+                
+                if (success) {
+                    refreshMedicineTable();
+                    JOptionPane.showMessageDialog(this, "Medicine Updated Successfully!");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Medicine ID not found!");
+                }
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid Format: Quantity must be Integer, Price must be Double.");
         }
-    } catch (NumberFormatException e) {
-        JOptionPane.showMessageDialog(this, "Check your Quantity and Price formats!");
-    }
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
         // TODO add your handling code here:
-     String id = jTextField2.getText(); 
-        if(id.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Select a medicine to delete");
+   String id = jTextField2.getText().trim(); 
+        if (id.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Select a medicine from the table to delete.");
         } else {
-            int confirm = JOptionPane.showConfirmDialog(this, "Delete this medicine?", "Confirm", JOptionPane.YES_NO_OPTION);
-            if(confirm == JOptionPane.YES_OPTION) {
-                new controller.PharmacyController().deleteMedicine(id);
-                refreshMedicineTable();
-                clearMedicineFields();
-                JOptionPane.showMessageDialog(this, "Medicine Removed.");
+            int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete ID: " + id + "?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                // FIXED: Capture boolean result from controller
+                boolean success = new PharmacyController().deleteMedicine(id);
+                if (success) {
+                    refreshMedicineTable();
+                    clearMedicineFields();
+                    JOptionPane.showMessageDialog(this, "Medicine Removed.");
+                } else {
+                    JOptionPane.showMessageDialog(this, "ID not found.");
+                }
             }
         }
     }//GEN-LAST:event_jButton4ActionPerformed
@@ -318,8 +460,40 @@ jTextField3.setText(model.getValueAt(index, 3).toString()); // Price
 
     private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
         // TODO add your handling code here:p;
-        searchMedicineTable(txtSearch.getText());
+     String query = txtSearch.getText().trim(); // FIXED: Changed from jTextFieldSearch to txtSearch
+    
+    PharmacyController control = new PharmacyController();
+    ArrayList<Medicine> results = control.searchMedicine(query);
+    
+    updateTableWithResults(results);
+    
+    if(query.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Search cleared. Showing all medicines.");
+    }
     }//GEN-LAST:event_txtSearchActionPerformed
+
+    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+     // 1. Get the selected index from your ComboBox (0, 1, 2, or 3)
+    int selectedCriteria = jComboBox1.getSelectedIndex();
+    
+    // 2. Call the sort algorithm from your Controller
+    controller.PharmacyController control = new controller.PharmacyController();
+    java.util.ArrayList<model.Medicine> sortedList = control.sortMedicines(selectedCriteria);
+    
+    // 3. Update your JTable with the sorted results
+    // You likely have a method called refreshMedicineTable() or similar
+    // Update it to accept the sorted list as a parameter
+    updateTableData(sortedList);
+    }//GEN-LAST:event_jButton6ActionPerformed
+
+    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jComboBox1ActionPerformed
+
+    private void txtSearch1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearch1ActionPerformed
+        // TODO add your handling code here:
+        searchMedicineByID();
+    }//GEN-LAST:event_txtSearch1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -352,7 +526,11 @@ jTextField3.setText(model.getValueAt(index, 3).toString()); // Price
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
+    private javax.swing.JButton jButton6;
+    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -368,5 +546,6 @@ jTextField3.setText(model.getValueAt(index, 3).toString()); // Price
     private javax.swing.JTextField jTextField4;
     private javax.swing.JTextField jTextField5;
     private javax.swing.JTextField txtSearch;
+    private javax.swing.JTextField txtSearch1;
     // End of variables declaration//GEN-END:variables
 }

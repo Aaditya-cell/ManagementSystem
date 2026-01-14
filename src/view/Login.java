@@ -161,7 +161,7 @@ public class Login extends javax.swing.JFrame {
                     .addContainerGap(190, Short.MAX_VALUE)))
         );
 
-        jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 60, 720, 370));
+        jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 60, 720, 370));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -183,27 +183,36 @@ public class Login extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-                                               
- String email = jTextField1.getText(); 
-        String pass = new String(jPasswordField1.getPassword());
-        String selectedRole = jComboBox1.getSelectedItem().toString();
-        
-        // 2. Connect to the controller
-        controller.PharmacyController control = new controller.PharmacyController();
-        String role = control.login(email, pass);
-        
-        // 3. Check if the login is successful AND matches the dropdown selection
-        if (role.equals("ADMIN") && selectedRole.equals("Admin")) {
-            new AdminDashboard().setVisible(true);
-            this.dispose(); 
-        } else if (role.equals("PHARMACIST") && selectedRole.equals("Pharmacist")) {
+   String email = jTextField1.getText(); 
+    String pass = new String(jPasswordField1.getPassword());
+
+    // Import required packages if they are in different folders
+    controller.PharmacyController control = new controller.PharmacyController();
+
+    // 1. Check for Hardcoded Admin (admin@gmail.com / 123)
+    if (email.equals("admin@gmail.com") && pass.equals("123")) {
+        javax.swing.JOptionPane.showMessageDialog(this, "Admin Login Successful!");
+        new AdminDashboard().setVisible(true);
+        this.dispose();
+    } 
+    // 2. Check for Pharmacists in the dynamic list
+    else {
+        boolean found = false;
+        for (model.Pharmacist p : control.getAllPharmacists()) {
+            if (p.getEmail().equals(email) && p.getPassword().equals(pass)) {
+                found = true;
+                break;
+            }
+        }
+
+        if (found) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Pharmacist Login Successful!");
             new PharmacistDashboard().setVisible(true);
             this.dispose();
         } else {
-            // Error message if credentials don't work or role is wrong
-            javax.swing.JOptionPane.showMessageDialog(this, "Invalid Credentials or Selected Role!");
+            javax.swing.JOptionPane.showMessageDialog(this, "Invalid Email or Password!", "Login Error", javax.swing.JOptionPane.ERROR_MESSAGE);
         }
-
+    }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed

@@ -9,30 +9,102 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.JOptionPane;
 import model.Pharmacist;
 
+/**
+ *
+ * @author lenovo
+ */
 public class AdminDashboard extends javax.swing.JFrame {
 
+    /**
+     *
+     */
     public AdminDashboard() {
         initComponents();
         refreshTable(); // Call this here to load data when the window opens
     }
-
-    // --- LOGIC METHODS (Place these OUTSIDE the constructor) ---
-
-    private void refreshTable() {
-        PharmacyController control = new PharmacyController();
-        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-        model.setRowCount(0); // Clear current rows
-
-        for (Pharmacist p : control.getAllPharmacists()) {
-            model.addRow(new Object[]{p.getName(), p.getEmail()});
+private void updateStackDisplay() {
+    PharmacyController control = new PharmacyController();
+    java.util.Stack<String> history = control.getActionHistory();
+    
+    // Updated to jTextArea3 to match your variable name
+    if (jTextArea3 != null) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("--- ACTION HISTORY (STACK LIFO) ---\n");
+        
+        // Loop backwards: Top of Stack (Newest) appears at the top of the box
+        for (int i = history.size() - 1; i >= 0; i--) {
+            sb.append("> ").append(history.get(i)).append("\n");
         }
+        
+        jTextArea3.setText(sb.toString()); 
     }
+}
+    
 
+   private void refreshTable() {
+    PharmacyController control = new PharmacyController();
+    DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+    model.setRowCount(0); // Clear current rows
+
+    // We get the list from the controller
+    java.util.List<Pharmacist> list = control.getAllPharmacists();
+
+    // To follow STACK behavior (LIFO), we loop from the end of the list to the start
+    // This puts the NEWEST pharmacist at the TOP (Row 0)
+    for (int i = list.size() - 1; i >= 0; i--) {
+        Pharmacist p = list.get(i);
+        model.addRow(new Object[]{p.getName(), p.getEmail()});
+    }
+}
     private void clearFields() {
         jTextField1.setText(""); // Email
         jTextField2.setText(""); // Name
         jPasswordField1.setText(""); // Password
     }
+    private void searchPharmacist() {
+    String searchName = JOptionPane.showInputDialog(this, "Enter Pharmacist Name to Search:");
+    
+    if (searchName == null || searchName.trim().isEmpty()) {
+        return; 
+    }
+
+    PharmacyController control = new PharmacyController();
+    java.util.List<Pharmacist> list = control.getAllPharmacists();
+    
+    // Binary Search REQUIREMENT: The data must be sorted
+    list.sort((p1, p2) -> p1.getName().compareToIgnoreCase(p2.getName()));
+
+    // Call the algorithm
+    int resultIndex = binarySearchByName(list, searchName.trim());
+
+    if (resultIndex != -1) {
+        Pharmacist found = list.get(resultIndex);
+        JOptionPane.showMessageDialog(this, "Pharmacist Found!\nName: " + found.getName() + "\nEmail: " + found.getEmail());
+    } else {
+        JOptionPane.showMessageDialog(this, "No pharmacist found with name: " + searchName);
+    }
+}
+    private int binarySearchByName(java.util.List<Pharmacist> list, String targetName) {
+    int low = 0;
+    int high = list.size() - 1;
+
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+        String midName = list.get(mid).getName();
+        
+        // This compares the two strings alphabetically
+        int comparison = targetName.compareToIgnoreCase(midName);
+
+        if (comparison == 0) {
+            return mid; // We found the name at this index!
+        } else if (comparison > 0) {
+            low = mid + 1; // Look in the right (higher) half
+        } else {
+            high = mid - 1; // Look in the left (lower) half
+        }
+    }
+    return -1; // We finished the search and found nothing
+}
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -42,6 +114,8 @@ public class AdminDashboard extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
@@ -60,6 +134,11 @@ public class AdminDashboard extends javax.swing.JFrame {
         jButton5 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        jButton7 = new javax.swing.JButton();
+
+        jTextArea1.setColumns(20);
+        jTextArea1.setRows(5);
+        jScrollPane2.setViewportView(jTextArea1);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -100,7 +179,6 @@ public class AdminDashboard extends javax.swing.JFrame {
         jLabel7.setText("Email:");
         jPanel2.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 102, -1, 42));
 
-        jPasswordField1.setText("jPasswordField1");
         jPasswordField1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jPasswordField1ActionPerformed(evt);
@@ -116,7 +194,7 @@ public class AdminDashboard extends javax.swing.JFrame {
                 jButton1ActionPerformed(evt);
             }
         });
-        jPanel2.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 290, 100, 50));
+        jPanel2.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 250, 100, 50));
 
         jButton2.setBackground(new java.awt.Color(0, 204, 204));
         jButton2.setFont(new java.awt.Font("Century Gothic", 3, 18)); // NOI18N
@@ -126,7 +204,7 @@ public class AdminDashboard extends javax.swing.JFrame {
                 jButton2ActionPerformed(evt);
             }
         });
-        jPanel2.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 220, 100, 50));
+        jPanel2.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 190, 100, 50));
 
         jButton3.setBackground(new java.awt.Color(0, 204, 204));
         jButton3.setFont(new java.awt.Font("Century Gothic", 3, 18)); // NOI18N
@@ -136,7 +214,7 @@ public class AdminDashboard extends javax.swing.JFrame {
                 jButton3ActionPerformed(evt);
             }
         });
-        jPanel2.add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 220, 100, 50));
+        jPanel2.add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 190, 100, 50));
 
         jButton4.setBackground(new java.awt.Color(0, 204, 204));
         jButton4.setFont(new java.awt.Font("Century Gothic", 3, 18)); // NOI18N
@@ -146,17 +224,17 @@ public class AdminDashboard extends javax.swing.JFrame {
                 jButton4ActionPerformed(evt);
             }
         });
-        jPanel2.add(jButton4, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 290, 100, 50));
+        jPanel2.add(jButton4, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 250, 100, 50));
 
         jButton6.setBackground(new java.awt.Color(0, 204, 204));
         jButton6.setFont(new java.awt.Font("Century Gothic", 3, 18)); // NOI18N
-        jButton6.setText("CLEAR");
+        jButton6.setText("UNDO");
         jButton6.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton6ActionPerformed(evt);
             }
         });
-        jPanel2.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 290, 100, 50));
+        jPanel2.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 250, 100, 50));
 
         jButton5.setText("Exit");
         jButton5.addActionListener(new java.awt.event.ActionListener() {
@@ -185,6 +263,12 @@ public class AdminDashboard extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(jTable1);
 
+        jButton7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton7ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -194,24 +278,28 @@ public class AdminDashboard extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 430, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(53, 53, 53)
+                        .addGap(43, 43, 43)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(35, Short.MAX_VALUE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGap(0, 365, Short.MAX_VALUE)
                         .addComponent(jLabel1)
-                        .addGap(290, 290, 290))))
+                        .addGap(106, 106, 106)
+                        .addComponent(jButton7, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(98, 98, 98))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(18, 18, 18)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(29, 29, 29)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton7, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(27, 27, 27)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addContainerGap(84, Short.MAX_VALUE))
+                .addContainerGap(86, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -236,30 +324,37 @@ public class AdminDashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-    String name = jTextField2.getText();  
-    String email = jTextField1.getText(); 
+String name = jTextField2.getText().trim();  
+    String email = jTextField1.getText().trim(); 
     String pass = new String(jPasswordField1.getPassword());
 
     PharmacyController control = new PharmacyController();
 
+    // 1. Basic Empty Check
     if (name.isEmpty() || email.isEmpty() || pass.isEmpty()) {
         JOptionPane.showMessageDialog(this, "All fields are required!");
+        return;
     } 
-    else if (!control.isValidEmail(email)) {
-        JOptionPane.showMessageDialog(this, "Invalid Email Format!");
-    } 
-    // CHECK FOR DUPLICATE EMAIL
-    else if (control.isEmailDuplicate(email)) {
+
+    // 2. Email Validation (Checking for @ and .)
+    if (!email.contains("@") || !email.contains(".")) {
+        JOptionPane.showMessageDialog(this, "Please enter a valid email address (e.g., name@email.com)");
+        return;
+    }
+
+    // 3. Duplicate Check
+    if (control.isEmailDuplicate(email)) {
         JOptionPane.showMessageDialog(this, "This email is already registered!");
     }
     else {
+        // All checks passed -> Push to Stack & Save
         control.addPharmacist(name, email, pass);
-        refreshTable();
-        // Standard clear of text fields
-        jTextField1.setText("");
-        jTextField2.setText("");
-        jPasswordField1.setText("");
-        JOptionPane.showMessageDialog(this, "Pharmacist Added! They can now login.");
+        
+        refreshTable();         // Update Table View (LIFO)
+        updateStackDisplay();   // Update History View
+        
+        clearFields();
+        JOptionPane.showMessageDialog(this, "Pharmacist Added Successfully!");
     }
     }//GEN-LAST:event_jButton2ActionPerformed
 
@@ -311,15 +406,36 @@ jTextField2.setText(model.getValueAt(index, 0).toString()); // Name
 jTextField1.setText(model.getValueAt(index, 1).toString()); // Email
     }//GEN-LAST:event_jTable1MouseClicked
 
-    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton6ActionPerformed
-
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
         // TODO add your handling code here:
         new Login().setVisible(true);
     this.dispose();
     }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+        // TODO add your handling code here:
+        PharmacyController control = new PharmacyController();
+    java.util.Stack<String> history = control.getActionHistory();
+    
+    if (!history.isEmpty()) {
+        // Pop the most recent action (LIFO behavior)
+        String removedAction = history.pop(); 
+        
+        // Update the visual display to prove the item is gone
+        updateStackDisplay(); 
+        
+        JOptionPane.showMessageDialog(this, "Undo Successful: Removed " + removedAction);
+    } else {
+        JOptionPane.showMessageDialog(this, "Nothing left to undo!");
+    }
+    }//GEN-LAST:event_jButton6ActionPerformed
+
+    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
+        // TODO add your handling code here:
+                                       
+    searchPharmacist(); // This calls the method you already pasted
+
+    }//GEN-LAST:event_jButton7ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -353,6 +469,7 @@ jTextField1.setText(model.getValueAt(index, 1).toString()); // Email
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton6;
+    private javax.swing.JButton jButton7;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -362,7 +479,9 @@ jTextField1.setText(model.getValueAt(index, 1).toString()); // Email
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPasswordField jPasswordField1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
+    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     // End of variables declaration//GEN-END:variables
