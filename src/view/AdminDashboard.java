@@ -27,7 +27,7 @@ private void updateStackDisplay() {
     java.util.Stack<String> history = control.getActionHistory();
     
     // Updated to jTextArea3 to match your variable name
-    if (jTextArea3 != null) {
+    if (jTextArea1 != null) {
         StringBuilder sb = new StringBuilder();
         sb.append("--- ACTION HISTORY (STACK LIFO) ---\n");
         
@@ -36,7 +36,7 @@ private void updateStackDisplay() {
             sb.append("> ").append(history.get(i)).append("\n");
         }
         
-        jTextArea3.setText(sb.toString()); 
+        jTextArea1.setText(sb.toString()); 
     }
 }
     
@@ -131,16 +131,18 @@ private void updateStackDisplay() {
         jButton3 = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
         jButton6 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         jButton7 = new javax.swing.JButton();
+        jButton5 = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
 
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
         jScrollPane2.setViewportView(jTextArea1);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setResizable(false);
 
         jPanel1.setBackground(new java.awt.Color(0, 204, 204));
 
@@ -236,14 +238,6 @@ private void updateStackDisplay() {
         });
         jPanel2.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 250, 100, 50));
 
-        jButton5.setText("Exit");
-        jButton5.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton5ActionPerformed(evt);
-            }
-        });
-        jPanel2.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 350, -1, -1));
-
         jTable1.setFont(new java.awt.Font("Century Gothic", 3, 18)); // NOI18N
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -269,6 +263,15 @@ private void updateStackDisplay() {
             }
         });
 
+        jButton5.setText("Exit");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
+
+        jLabel2.setText("Search");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -280,26 +283,42 @@ private void updateStackDisplay() {
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 430, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(43, 43, 43)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap(45, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addGap(0, 365, Short.MAX_VALUE)
-                        .addComponent(jLabel1)
-                        .addGap(106, 106, 106)
-                        .addComponent(jButton7, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(98, 98, 98))))
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addGap(186, 186, 186)
+                                .addComponent(jButton5)
+                                .addGap(48, 48, 48))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButton7, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(83, 83, 83))))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(18, 18, 18)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addContainerGap(17, Short.MAX_VALUE)
+                        .addComponent(jButton5)
+                        .addGap(18, 18, 18)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel2)
                     .addComponent(jButton7, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(27, 27, 27)
+                .addGap(30, 30, 30)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addContainerGap(86, Short.MAX_VALUE))
+                .addContainerGap(128, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -335,6 +354,13 @@ String name = jTextField2.getText().trim();
         JOptionPane.showMessageDialog(this, "All fields are required!");
         return;
     } 
+
+    // 1.5 ALPHABETIC VALIDATION for Name
+    // This regex allows letters (a-z, A-Z) and spaces, but NO numbers
+    if (!name.matches("^[a-zA-Z\\s]+$")) {
+        JOptionPane.showMessageDialog(this, "Invalid Name! Please use alphabetic characters only.");
+        return;
+    }
 
     // 2. Email Validation (Checking for @ and .)
     if (!email.contains("@") || !email.contains(".")) {
@@ -413,28 +439,49 @@ jTextField1.setText(model.getValueAt(index, 1).toString()); // Email
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
-        // TODO add your handling code here:
-        PharmacyController control = new PharmacyController();
+  // 1. Get the controller instance
+    PharmacyController control = new PharmacyController();
+    
+    // 2. Get the ACTUAL history stack from the controller
     java.util.Stack<String> history = control.getActionHistory();
     
+    // DEBUG: Print size to console to see if it's empty
+    System.out.println("History Stack Size: " + history.size());
+
     if (!history.isEmpty()) {
-        // Pop the most recent action (LIFO behavior)
-        String removedAction = history.pop(); 
+        // Pop the most recent action (LIFO)
+        String lastAction = history.pop(); 
         
-        // Update the visual display to prove the item is gone
-        updateStackDisplay(); 
+        // Check if the action was an 'Add' so we can actually remove the person
+        if (lastAction.startsWith("Added Pharmacist: ")) {
+            String emailToUndo = lastAction.replace("Added Pharmacist: ", "").trim();
+            
+            // Remove the pharmacist from the LinkedList
+            control.deletePharmacist(emailToUndo);
+            
+            // Because deletePharmacist adds a "Deleted" message to the stack, 
+            // we pop it immediately so the history stays clean
+            if (!history.isEmpty()) history.pop();
+            
+            JOptionPane.showMessageDialog(this, "Undo Successful: Removed " + emailToUndo);
+        } else {
+            JOptionPane.showMessageDialog(this, "Undo performed for: " + lastAction);
+        }
         
-        JOptionPane.showMessageDialog(this, "Undo Successful: Removed " + removedAction);
+        // 3. REFRESH EVERYTHING
+        refreshTable();       // Updates the JTable to show the person is gone
+        updateStackDisplay();  // Updates your history text area
+        
     } else {
+        // This is what you are seeing in your screenshot
         JOptionPane.showMessageDialog(this, "Nothing left to undo!");
     }
     }//GEN-LAST:event_jButton6ActionPerformed
 
     private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
         // TODO add your handling code here:
-                                       
-    searchPharmacist(); // This calls the method you already pasted
 
+        searchPharmacist(); // This calls the method you already pasted
     }//GEN-LAST:event_jButton7ActionPerformed
 
     /**
@@ -471,6 +518,7 @@ jTextField1.setText(model.getValueAt(index, 1).toString()); // Email
     private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton7;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;

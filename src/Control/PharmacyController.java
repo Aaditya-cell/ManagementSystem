@@ -2,42 +2,120 @@ package controller;
 
 import java.util.*;
 import model.Medicine;
-import model.Pharmacist; // Ensure this class exists in your model package
+import model.Pharmacist;
 
 public class PharmacyController {
-    // Shared data lists (static so they persist across different screens)
+    // Shared data lists (static to persist across different screens)
     private static ArrayList<Medicine> medicineList = new ArrayList<>();
-    private static ArrayList<Pharmacist> pharmacistList = new ArrayList<>();
     
-    // Task A: Data Structure Requirements
-    private static Queue<Medicine> recentlyAddedQueue = new LinkedList<>();
+    // Task: Using LinkedList for Pharmacist List
+    private static LinkedList<Pharmacist> pharmacistList = new LinkedList<>();
+    
+    // Task: Queue for Carousel (Last 5 added)
+    private static Queue<Medicine> recentlyAddedQueue = new LinkedList<>(); 
+    
+    // Task: Stack for System History (LIFO)
     private static Stack<String> actionHistory = new Stack<>();
 
     // =========================================================================
-    // ADMIN DASHBOARD METHODS (Pharmacist Management)
+    // PHARMACIST DASHBOARD METHODS (Medicine Management)
     // =========================================================================
 
-    public void addPharmacist(String name, String email, String pass) {
-        pharmacistList.add(new Pharmacist(name, email, pass));
-        actionHistory.push("Admin added pharmacist: " + name);
+    public String addMedicine(int id, String name, String category, int qty, double price) {
+        for (Medicine m : medicineList) {
+            if (m.getId() == id) return "DUPLICATE";
+        }
+        
+        Medicine newMed = new Medicine(id, name, category, qty, price);
+        medicineList.add(newMed);
+        
+        // Queue Logic: Maintain only 5 most recent items
+        if (recentlyAddedQueue.size() >= 5) {
+            recentlyAddedQueue.poll(); 
+        }
+        recentlyAddedQueue.add(newMed); 
+        
+        // Stack Push for Undo
+        actionHistory.push("Added Medicine: " + id);
+        return "SUCCESS";
     }
 
-    public ArrayList<Pharmacist> getAllPharmacists() {
-        return pharmacistList;
-    }
-
-    public boolean isEmailDuplicate(String email) {
-        for (Pharmacist p : pharmacistList) {
-            if (p.getEmail().equalsIgnoreCase(email)) {
+    public boolean updateMedicine(int id, String name, String category, int qty, double price) {
+        for (Medicine m : medicineList) {
+            if (m.getId() == id) {
+                m.setName(name);
+                m.setCategory(category);
+                m.setQuantity(qty);
+                m.setPrice(price);
+                actionHistory.push("Updated Medicine: " + id);
                 return true;
             }
         }
         return false;
     }
 
-    public boolean isValidEmail(String email) {
-        // Basic validation: must contain @ and a dot
-        return email != null && email.contains("@") && email.contains(".");
+    public boolean deleteMedicine(int id) {
+        boolean removed = medicineList.removeIf(m -> m.getId() == id);
+        if (removed) {
+            recentlyAddedQueue.removeIf(m -> m.getId() == id);
+            actionHistory.push("Deleted Medicine: " + id);
+        }
+        return removed;
+    }
+
+    public ArrayList<Medicine> searchMedicine(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>(medicineList);
+        }
+        ArrayList<Medicine> results = new ArrayList<>();
+        String lowerQuery = query.toLowerCase().trim();
+        for (Medicine m : medicineList) {
+            if (m.getName().toLowerCase().contains(lowerQuery)) {
+                results.add(m);
+            }
+        }
+        return results;
+    }
+
+    public ArrayList<Medicine> getRecentMedicines() {
+        return new ArrayList<>(recentlyAddedQueue);
+    }
+
+    // =========================================================================
+    // SORTING LOGIC
+    // =========================================================================
+
+    public ArrayList<Medicine> sortMedicines(int criteria) {
+        ArrayList<Medicine> sortedList = new ArrayList<>(medicineList);
+        switch (criteria) {
+            case 0: Collections.sort(sortedList, Comparator.comparing(Medicine::getName, String.CASE_INSENSITIVE_ORDER)); break;
+            case 1: Collections.sort(sortedList, (m1, m2) -> m2.getName().compareToIgnoreCase(m1.getName())); break;
+            case 2: Collections.sort(sortedList, Comparator.comparingDouble(Medicine::getPrice)); break;
+            case 3: Collections.sort(sortedList, (m1, m2) -> Double.compare(m2.getPrice(), m1.getPrice())); break;
+        }
+        return sortedList;
+    }
+
+    // =========================================================================
+    // LOGIN & ADMIN METHODS (Using LinkedList & Stack)
+    // =========================================================================
+
+    public void addPharmacist(String name, String email, String pass) {
+        pharmacistList.add(new Pharmacist(name, email, pass));
+        
+        // CRITICAL: Format "Added: email" so AdminDashboard Undo can parse it
+        actionHistory.push("Added Pharmacist: " + email);
+    }
+
+    public LinkedList<Pharmacist> getAllPharmacists() {
+        return pharmacistList;
+    }
+
+    public boolean isEmailDuplicate(String email) {
+        for (Pharmacist p : pharmacistList) {
+            if (p.getEmail().equalsIgnoreCase(email)) return true;
+        }
+        return false;
     }
 
     public void updatePharmacist(String email, String newName, String newPass) {
@@ -45,97 +123,17 @@ public class PharmacyController {
             if (p.getEmail().equalsIgnoreCase(email)) {
                 p.setName(newName);
                 p.setPassword(newPass);
-                actionHistory.push("Updated pharmacist: " + email);
+                actionHistory.push("Updated Pharmacist: " + email);
                 break;
             }
         }
     }
 
-    public boolean deletePharmacist(String email) {
-        boolean removed = pharmacistList.removeIf(p -> p.getEmail().equalsIgnoreCase(email));
-        if (removed) {
-            actionHistory.push("Deleted pharmacist: " + email);
-        }
-        return removed;
-    }
-
-    // =========================================================================
-    // PHARMACIST DASHBOARD METHODS (Medicine Management)
-    // =========================================================================
-
-    public String addMedicine(String id, String name, String category, int qty, double price) {
-        for (Medicine m : medicineList) {
-            if (m.getId().equalsIgnoreCase(id)) return "DUPLICATE";
-        }
-        
-        Medicine newMed = new Medicine(id, name, category, qty, price);
-        medicineList.add(newMed);
-        
-        // Manage Queue: Keep only last 5
-        if (recentlyAddedQueue.size() >= 5) {
-            recentlyAddedQueue.poll();
-        }
-        recentlyAddedQueue.add(newMed);
-        
-        actionHistory.push("Added medicine: " + name);
-        return "SUCCESS";
-    }
-
-    public ArrayList<Medicine> searchMedicine(String query) {
-        if (query == null || query.isEmpty()) return medicineList;
-        ArrayList<Medicine> results = new ArrayList<>();
-        for (Medicine m : medicineList) {
-            if (m.getName().toLowerCase().contains(query.toLowerCase()) || m.getId().contains(query)) {
-                results.add(m);
-            }
-        }
-        return results;
-    }
-
-    public boolean updateMedicine(String id, String name, String category, int qty, double price) {
-        for (int i = 0; i < medicineList.size(); i++) {
-            if (medicineList.get(i).getId().equals(id)) {
-                medicineList.set(i, new Medicine(id, name, category, qty, price));
-                actionHistory.push("Updated medicine: " + name);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean deleteMedicine(String id) {
-        return medicineList.removeIf(m -> {
-            if (m.getId().equals(id)) {
-                actionHistory.push("Deleted ID: " + id);
-                return true;
-            }
-            return false;
-        });
-    }
-
-    // =========================================================================
-    // ALGORITHMS & UTILITIES
-    // =========================================================================
-
-    // SELECTION SORT Implementation
-    public ArrayList<Medicine> sortMedicines(int criteria) {
-        ArrayList<Medicine> sorted = new ArrayList<>(medicineList);
-        int n = sorted.size();
-        for (int i = 0; i < n - 1; i++) {
-            int targetIdx = i;
-            for (int j = i + 1; j < n; j++) {
-                boolean shouldSwap = false;
-                switch (criteria) {
-                    case 0 -> shouldSwap = sorted.get(j).getPrice() < sorted.get(targetIdx).getPrice();
-                    case 1 -> shouldSwap = sorted.get(j).getPrice() > sorted.get(targetIdx).getPrice();
-                    case 2 -> shouldSwap = sorted.get(j).getName().compareToIgnoreCase(sorted.get(targetIdx).getName()) < 0;
-                    case 3 -> shouldSwap = sorted.get(j).getName().compareToIgnoreCase(sorted.get(targetIdx).getName()) > 0;
-                }
-                if (shouldSwap) targetIdx = j;
-            }
-            Collections.swap(sorted, i, targetIdx);
-        }
-        return sorted;
+    public void deletePharmacist(String email) {
+        pharmacistList.removeIf(p -> p.getEmail().equalsIgnoreCase(email));
+        // We don't necessarily want to push "Deleted" to stack during an UNDO operation
+        // to avoid infinite loops, but for general history:
+        actionHistory.push("Deleted Pharmacist: " + email);
     }
 
     public Stack<String> getActionHistory() {
